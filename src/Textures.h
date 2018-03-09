@@ -18,6 +18,7 @@ struct CachedTexture
 
 	graphics::ObjectHandle name;
 	u32		crc = 0;
+	u32		texDataCrc = 0;
 //	float	fulS, fulT;
 //	WORD	ulS, ulT, lrS, lrT;
 	float	offsetS, offsetT;
@@ -92,6 +93,8 @@ private:
 	typedef std::list<CachedTexture> Textures;
 	typedef std::unordered_map<u32, Textures::iterator> Texture_Locations;
 	typedef std::unordered_map<u32, CachedTexture> FBTextures;
+	typedef std::unordered_map<u32, std::pair<graphics::ObjectHandle, u32>> TextureDataCache;
+	TextureDataCache m_texDataCache;
 	Textures m_textures;
 	Texture_Locations m_lruTextureLocations;
 	FBTextures m_fbTextures;

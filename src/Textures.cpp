@@ -530,6 +530,7 @@ void TextureCache::destroy()
 		gfxContext.deleteTexture(cur->name, false);
 	m_textures.clear();
 	m_lruTextureLocations.clear();
+	m_texDataCache.clear();
 
 	for (FBTextures::const_iterator cur = m_fbTextures.cbegin(); cur != m_fbTextures.cend(); ++cur)
 		gfxContext.deleteTexture(cur->second.name, true);
@@ -538,9 +539,14 @@ void TextureCache::destroy()
 
 void TextureCache::_checkCacheSize()
 {
-	if (m_textures.size() >= m_maxCacheSize) {
+	if (m_texDataCache.size() >= m_maxCacheSize) {
 		CachedTexture& clsTex = m_textures.back();
-		gfxContext.deleteTexture(clsTex.name, false);
+		auto iter = m_texDataCache.find(clsTex.texDataCrc);
+		iter->second.second -= 1;
+		if (iter->second.second == 0) {
+			gfxContext.deleteTexture(clsTex.name, false);
+			m_texDataCache.erase(clsTex.texDataCrc);
+		}
 		m_lruTextureLocations.erase(clsTex.crc);
 		m_textures.pop_back();
 	}
@@ -551,7 +557,8 @@ CachedTexture * TextureCache::_addTexture(u32 _crc32)
 	if (m_curUnpackAlignment == 0)
 		m_curUnpackAlignment = gfxContext.getTextureUnpackAlignment();
 	_checkCacheSize();
-	m_textures.emplace_front(gfxContext.createTexture(textureTarget::TEXTURE_2D));
+	ObjectHandle name;
+	m_textures.emplace_front(name);
 	Textures::iterator new_iter = m_textures.begin();
 	new_iter->crc = _crc32;
 	m_lruTextureLocations.insert(std::pair<u32, Textures::iterator>(_crc32, new_iter));
@@ -823,6 +830,21 @@ void TextureCache::_loadBackground(CachedTexture *pTexture)
 				((u16*)pDest)[j++] = GetTexel((u64*)pSrc, tx, 0, pTexture->palette);
 		}
 	}
+
+	u32 crc = CRC_Calculate(0, pDest, pTexture->textureBytes);
+	auto iter = m_texDataCache.find(crc);
+	if (iter != m_texDataCache.end()) {
+		pTexture->name = iter->second.first;
+		iter->second.second += 1;
+		free(pDest);
+		free(pSwapped);
+		return;
+	} else {
+		pTexture->name = gfxContext.createTexture(textureTarget::TEXTURE_2D);
+		std::pair<ObjectHandle, u32> pair(pTexture->name, 1);
+		m_texDataCache.insert({crc, pair});
+	}
+	pTexture->texDataCrc = crc;
 
 	if ((config.generalEmulation.hacks&hack_LoadDepthTextures) != 0 && gDP.colorImage.address == gDP.depthImageAddress) {
 		_loadDepthTexture(pTexture, (u16*)pDest);
@@ -1158,6 +1180,21 @@ void TextureCache::_load(u32 _tile, CachedTexture *_pTexture)
 
 	while (true) {
 		_getTextureDestData(tmptex, pDest, glInternalFormat, GetTexel, &line);
+		if (mipLevel == 0) {
+			u32 crc = CRC_Calculate(0, pDest, _pTexture->textureBytes);
+			auto iter = m_texDataCache.find(crc);
+			if (iter != m_texDataCache.end()) {
+				_pTexture->name = iter->second.first;
+				iter->second.second += 1;
+				free(pDest);
+				return;
+			} else {
+				_pTexture->name = gfxContext.createTexture(textureTarget::TEXTURE_2D);
+				std::pair<ObjectHandle, u32> pair(_pTexture->name, 1);
+				m_texDataCache.insert({crc, pair});
+			}
+			_pTexture->texDataCrc = crc;
+		}
 
 		if ((config.generalEmulation.hacks&hack_LoadDepthTextures) != 0 && gDP.colorImage.address == gDP.depthImageAddress) {
 			_loadDepthTexture(_pTexture, (u16*)pDest);
@@ -1449,6 +1486,7 @@ void TextureCache::_clear()
 	}
 	m_textures.clear();
 	m_lruTextureLocations.clear();
+	m_texDataCache.clear();
 }
 
 void TextureCache::update(u32 _t)
@@ -1542,8 +1580,12 @@ void TextureCache::update(u32 _t)
 			m_hits++;
 			return;
 		}
-
-		gfxContext.deleteTexture(currentTex.name, false);
+		auto glIter = m_texDataCache.find(currentTex.texDataCrc);
+		glIter->second.second -= 1;
+		if (glIter->second.second == 0) {
+			gfxContext.deleteTexture(currentTex.name, false);
+			m_texDataCache.erase(currentTex.texDataCrc);
+		}
 		m_lruTextureLocations.erase(locations_iter);
 		m_textures.erase(iter);
 	}
