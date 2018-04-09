@@ -79,6 +79,7 @@ typedef double GLdouble;
 #define glBlendColor(...) CHECKED_GL_FUNCTION(g_glBlendColor, __VA_ARGS__)
 #define glReadBuffer(...) CHECKED_GL_FUNCTION(g_glReadBuffer, __VA_ARGS__)
 #define glFinish(...) CHECKED_GL_FUNCTION(g_glFinish, __VA_ARGS__)
+#define glFlush(...) CHECKED_GL_FUNCITON(g_glFlush, __VA_ARGS__)
 
 extern PFNGLBLENDFUNCPROC g_glBlendFunc;
 extern PFNGLPIXELSTOREIPROC g_glPixelStorei;
@@ -111,6 +112,7 @@ extern PFNGLACTIVETEXTUREPROC g_glActiveTexture;
 extern PFNGLBLENDCOLORPROC g_glBlendColor;
 extern PFNGLREADBUFFERPROC g_glReadBuffer;
 extern PFNGLFINISHPROC g_glFinish;
+extern PFNGLFLUSHPROC g_glFlush;
 #endif
 
 #ifdef OS_WINDOWS
