@@ -79,14 +79,6 @@ void GLInfo::init() {
 		}
 	}
 
-#ifdef EGL
-	if (isGLESX && bufferStorage)
-		g_glBufferStorage = (PFNGLBUFFERSTORAGEPROC) eglGetProcAddress("glBufferStorageEXT");
-	if (isGLES2 && shaderStorage) {
-		g_glProgramBinary = (PFNGLPROGRAMBINARYPROC) eglGetProcAddress("glProgramBinaryOES");
-		g_glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC) eglGetProcAddress("glGetProgramBinaryOES");
-	}
-#endif
 #ifndef OS_ANDROID
 	if (isGLES2 && config.frameBufferEmulation.copyToRDRAM > Config::ctSync) {
 		config.frameBufferEmulation.copyToRDRAM = Config::ctDisable;
@@ -102,4 +94,7 @@ void GLInfo::init() {
 
 	depthTexture = !isGLES2 || Utils::isExtensionSupported(*this, "GL_OES_depth_texture");
 	noPerspective = Utils::isExtensionSupported(*this, "GL_NV_shader_noperspective_interpolation");
+
+	textureBarrier = Utils::isExtensionSupported(*this, "GL_ARB_texture_barrier") || Utils::isExtensionSupported(*this, "GL_NV_texture_barrier");
+	fbFetchBarrier = Utils::isExtensionSupported(*this, "GL_EXT_shader_framebuffer_fetch_non_coherent") || Utils::isExtensionSupported(*this, "GL_QCOM_shader_framebuffer_fetch_noncoherent");
 }

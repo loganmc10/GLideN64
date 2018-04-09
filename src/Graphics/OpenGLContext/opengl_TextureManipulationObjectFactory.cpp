@@ -283,14 +283,25 @@ namespace opengl {
 	class SetTexParameters : public Set2DTextureParameters
 	{
 	public:
-		SetTexParameters(CachedBindTexture* _bind, TextureParams * _texparams, bool _supportMipmapLevel)
+		SetTexParameters(CachedBindTexture* _bind, TextureParams * _texparams, bool _supportMipmapLevel, bool _textureBarrier, bool _fbFetchBarrier)
 			: m_bind(_bind)
 			, m_texparams(_texparams)
-			, m_supportMipmapLevel(_supportMipmapLevel) {
+			, m_supportMipmapLevel(_supportMipmapLevel)
+			, m_textureBarrier(_textureBarrier)
+			, m_fbFetchBarrier(_fbFetchBarrier) {
 		}
 
 		void setTextureParameters(const graphics::Context::TexParameters & _parameters) override
 		{
+			if (_parameters.fbTexture) {
+				if (m_fbFetchBarrier)
+					glFramebufferFetchBarrierEXT();
+				else if (m_textureBarrier)
+					glTextureBarrier();
+				else
+					glFlush();
+			}
+
 			TextureParams::const_iterator iter = m_texparams->find(u32(_parameters.handle));
 			m_bind->bind(_parameters.textureUnitIndex, _parameters.target, _parameters.handle);
 
@@ -326,6 +337,8 @@ namespace opengl {
 		CachedBindTexture* m_bind;
 		TextureParams* m_texparams;
 		bool m_supportMipmapLevel;
+		bool m_textureBarrier;
+		bool m_fbFetchBarrier;
 	};
 
 
@@ -417,7 +430,7 @@ namespace opengl {
 		if (SetTextureParameters::Check(m_glInfo))
 			return new SetTextureParameters;
 
-		return new SetTexParameters(m_cachedFunctions.getCachedBindTexture(), m_cachedFunctions.getTexParams(), !m_glInfo.isGLES2);
+		return new SetTexParameters(m_cachedFunctions.getCachedBindTexture(), m_cachedFunctions.getTexParams(), !m_glInfo.isGLES2, m_glInfo.textureBarrier, m_glInfo.fbFetchBarrier);
 	}
 
 }

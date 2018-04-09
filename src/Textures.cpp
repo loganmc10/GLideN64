@@ -1283,10 +1283,11 @@ u32 _calculateCRC(u32 _t, const TextureParams & _params, u32 _bytes)
 	return crc;
 }
 
-void TextureCache::activateTexture(u32 _t, CachedTexture *_pTexture)
+void TextureCache::activateTexture(u32 _t, CachedTexture *_pTexture, bool _isFBTexture)
 {
 
 	Context::TexParameters params;
+	params.fbTexture = _isFBTexture;
 	params.handle = _pTexture->name;
 	if (config.video.multisampling > 0 && _pTexture->frameBufferTexture == CachedTexture::fbMultiSample) {
 		params.target = textureTarget::TEXTURE_2D_MULTISAMPLE;
@@ -1388,7 +1389,7 @@ void TextureCache::_updateBackground()
 		assert(currentTex.format == gSP.bgImage.format);
 		assert(currentTex.size == gSP.bgImage.size);
 
-		activateTexture(0, &currentTex);
+		activateTexture(0, &currentTex, false);
 		m_hits++;
 		return;
 	}
@@ -1431,7 +1432,7 @@ void TextureCache::_updateBackground()
 	pCurrent->offsetT = 0.5f;
 
 	_loadBackground(pCurrent);
-	activateTexture(0, pCurrent);
+	activateTexture(0, pCurrent, false);
 
 	current[0] = pCurrent;
 }
@@ -1487,7 +1488,7 @@ void TextureCache::update(u32 _t)
 	if (gDP.otherMode.textureLOD == G_TL_LOD && gSP.texture.level == 0 && !currentCombiner()->usesLOD() && _t == 1) {
 		current[1] = current[0];
 		if (current[1] != nullptr) {
-			activateTexture(1, current[1]);
+			activateTexture(1, current[1], false);
 			return;
 		}
 	}
@@ -1519,7 +1520,7 @@ void TextureCache::update(u32 _t)
 	const u32 crc = _calculateCRC(_t, params, sizes.bytes);
 
 	if (current[_t] != nullptr && current[_t]->crc == crc) {
-		activateTexture(_t, current[_t]);
+		activateTexture(_t, current[_t], false);
 		return;
 	}
 
@@ -1534,7 +1535,7 @@ void TextureCache::update(u32 _t)
 			assert(currentTex.format == pTile->format);
 			assert(currentTex.size == pTile->size);
 
-			activateTexture(_t, &currentTex);
+			activateTexture(_t, &currentTex, false);
 			m_hits++;
 			return;
 		}
@@ -1586,7 +1587,7 @@ void TextureCache::update(u32 _t)
 	pCurrent->offsetT = 0.5f;
 
 	_load(_t, pCurrent);
-	activateTexture( _t, pCurrent );
+	activateTexture( _t, pCurrent, false );
 
 	current[_t] = pCurrent;
 }

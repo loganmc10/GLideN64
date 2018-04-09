@@ -4,10 +4,12 @@
 
 #define glGetProcAddress wglGetProcAddress
 #define GL_GET_PROC_ADR(proc_type, proc_name) g_##proc_name = (proc_type) glGetProcAddress(#proc_name)
+#define GL_GET_PROC_ADR_EXT(proc_type, proc_name, proc_name_ext) g_##proc_name = (proc_type) glGetProcAddress(#proc_name_ext)
 
 #elif defined(VERO4K) || defined(ODROID) || defined(VC)
 
 #define GL_GET_PROC_ADR(proc_type, proc_name) g_##proc_name = (proc_type) dlsym(gles2so, #proc_name);
+#define GL_GET_PROC_ADR_EXT(proc_type, proc_name, proc_name_ext) g_##proc_name = (proc_type) dlsym(#proc_name_ext)
 
 #elif defined(EGL)
 
@@ -15,6 +17,7 @@
 #include <EGL/eglext.h>
 #define glGetProcAddress eglGetProcAddress
 #define GL_GET_PROC_ADR(proc_type, proc_name) g_##proc_name = (proc_type) glGetProcAddress(#proc_name)
+#define GL_GET_PROC_ADR_EXT(proc_type, proc_name, proc_name_ext) g_##proc_name = (proc_type) glGetProcAddress(#proc_name_ext)
 
 #elif defined(OS_LINUX)
 
@@ -31,6 +34,7 @@ typedef struct __GLXFBConfigRec *GLXFBConfig;
 #include <GL/glxext.h>
 #define glGetProcAddress glXGetProcAddress
 #define GL_GET_PROC_ADR(proc_type, proc_name) g_##proc_name = (proc_type) glGetProcAddress((const GLubyte*)#proc_name)
+#define GL_GET_PROC_ADR_EXT(proc_type, proc_name, proc_name_ext) g_##proc_name = (proc_type) glGetProcAddress((const GLubyte*)#proc_name_ext)
 
 #elif defined(OS_MAC_OS_X)
 #include <dlfcn.h>
@@ -45,6 +49,7 @@ static void* AppleGLGetProcAddress (const char *name)
 }
 #define glGetProcAddress AppleGLGetProcAddress
 #define GL_GET_PROC_ADR(proc_type, proc_name) g_##proc_name = (proc_type) glGetProcAddress(#proc_name)
+#define GL_GET_PROC_ADR_EXT(proc_type, proc_name, proc_name_ext) g_##proc_name = (proc_type) glGetProcAddress(#proc_name_ext)
 
 #elif defined(OS_IOS)
 #include <dlfcn.h>
@@ -56,6 +61,7 @@ static void* IOSGLGetProcAddress (const char *name)
 
 #define glGetProcAddress IOSGLGetProcAddress
 #define GL_GET_PROC_ADR(proc_type, proc_name) g_##proc_name = (proc_type)glGetProcAddress(#proc_name)
+#define GL_GET_PROC_ADR_EXT(proc_type, proc_name, proc_name_ext) g_##proc_name = (proc_type) glGetProcAddress(#proc_name_ext)
 
 #endif
 
@@ -190,6 +196,8 @@ PFNGLCREATEFRAMEBUFFERSPROC g_glCreateFramebuffers;
 PFNGLNAMEDFRAMEBUFFERTEXTUREPROC g_glNamedFramebufferTexture;
 PFNGLDRAWRANGEELEMENTSBASEVERTEXPROC g_glDrawRangeElementsBaseVertex;
 PFNGLFLUSHMAPPEDBUFFERRANGEPROC g_glFlushMappedBufferRange;
+PFNGLTEXTUREBARRIERPROC g_glTextureBarrier;
+PFNGLFRAMEBUFFERFETCHBARRIEREXTPROC g_glFramebufferFetchBarrierEXT;
 
 void initGLFunctions()
 {
@@ -301,6 +309,8 @@ void initGLFunctions()
 	GL_GET_PROC_ADR(PFNGLGETSTRINGIPROC, glGetStringi);
 	GL_GET_PROC_ADR(PFNGLINVALIDATEFRAMEBUFFERPROC, glInvalidateFramebuffer);
 	GL_GET_PROC_ADR(PFNGLBUFFERSTORAGEPROC, glBufferStorage);
+	if (g_glBufferStorage == nullptr)
+		GL_GET_PROC_ADR_EXT(PFNGLBUFFERSTORAGEPROC, glBufferStorage, glBufferStorageEXT);
 	GL_GET_PROC_ADR(PFNGLFENCESYNCPROC, glFenceSync);
 	GL_GET_PROC_ADR(PFNGLCLIENTWAITSYNCPROC, glClientWaitSync);
 	GL_GET_PROC_ADR(PFNGLDELETESYNCPROC, glDeleteSync);
@@ -314,7 +324,11 @@ void initGLFunctions()
 	GL_GET_PROC_ADR(PFNGLBUFFERSUBDATAPROC, glBufferSubData);
 
 	GL_GET_PROC_ADR(PFNGLGETPROGRAMBINARYPROC, glGetProgramBinary);
+	if (g_glGetProgramBinary == nullptr)
+		GL_GET_PROC_ADR_EXT(PFNGLGETPROGRAMBINARYPROC, glGetProgramBinary, glGetProgramBinaryOES);
 	GL_GET_PROC_ADR(PFNGLPROGRAMBINARYPROC, glProgramBinary);
+	if (g_glProgramBinary == nullptr)
+		GL_GET_PROC_ADR_EXT(PFNGLPROGRAMBINARYPROC, glProgramBinary, glProgramBinaryOES);
 	GL_GET_PROC_ADR(PFNGLPROGRAMPARAMETERIPROC, glProgramParameteri);
 
 	GL_GET_PROC_ADR(PFNGLTEXSTORAGE2DPROC, glTexStorage2D);
@@ -330,4 +344,10 @@ void initGLFunctions()
 	GL_GET_PROC_ADR(PFNGLNAMEDFRAMEBUFFERTEXTUREPROC, glNamedFramebufferTexture);
 	GL_GET_PROC_ADR(PFNGLDRAWRANGEELEMENTSBASEVERTEXPROC, glDrawRangeElementsBaseVertex);
 	GL_GET_PROC_ADR(PFNGLFLUSHMAPPEDBUFFERRANGEPROC, glFlushMappedBufferRange);
+	GL_GET_PROC_ADR(PFNGLTEXTUREBARRIERPROC, glTextureBarrier);
+	if (g_glTextureBarrier == nullptr)
+		GL_GET_PROC_ADR_EXT(PFNGLTEXTUREBARRIERPROC, glTextureBarrier, glTextureBarrierNV);
+	GL_GET_PROC_ADR(PFNGLFRAMEBUFFERFETCHBARRIEREXTPROC, glFramebufferFetchBarrierEXT);
+	if (g_glFramebufferFetchBarrierEXT == nullptr)
+		GL_GET_PROC_ADR_EXT(PFNGLFRAMEBUFFERFETCHBARRIEREXTPROC, glFramebufferFetchBarrierEXT, glFramebufferFetchBarrierQCOM);
 }

@@ -251,7 +251,7 @@ bool TexrectDrawer::draw()
 
 	drawer._updateScreenCoordsViewport(m_pBuffer);
 
-	textureCache().activateTexture(0, m_pTexture);
+	textureCache().activateTexture(0, m_pTexture, false);
 	// Disable filtering to avoid black outlines
 	Context::TexParameters texParams;
 	texParams.handle = m_pTexture->name;

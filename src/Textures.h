@@ -55,7 +55,7 @@ struct TextureCache
 	void destroy();
 	CachedTexture * addFrameBufferTexture(bool _multisample);
 	void removeFrameBufferTexture(CachedTexture * _pTexture);
-	void activateTexture(u32 _t, CachedTexture *_pTexture);
+	void activateTexture(u32 _t, CachedTexture *_pTexture, bool _isFBTexture);
 	void activateDummy(u32 _t);
 	void activateMSDummy(u32 _t);
 	void update(u32 _t);

@@ -123,6 +123,7 @@ namespace graphics {
 			TextureParam wrapT;
 			Parameter maxMipmapLevel;
 			Parameter maxAnisotropy;
+			bool fbTexture = false;
 		};
 
 		void setTextureParameters(const TexParameters & _parameters);
