@@ -21,7 +21,6 @@ namespace graphics {
 		WeakBlitFramebuffer,
 		DepthFramebufferTextures,
 		ShaderProgramBinary,
-		ImageTextures,
 		IntegerTextures,
 		ClipControl
 	};
@@ -81,7 +80,6 @@ namespace graphics {
 
 		struct InitTextureParams {
 			ObjectHandle handle;
-			ImageUnitParam ImageUnit;
 			TextureUnitParam textureUnitIndex{0};
 			u32 msaaLevel = 0;
 			u32 width = 0;
@@ -98,7 +96,6 @@ namespace graphics {
 
 		struct UpdateTextureDataParams {
 			ObjectHandle handle;
-			ImageUnitParam ImageUnit;
 			TextureUnitParam textureUnitIndex{0};
 			u32 x = 0;
 			u32 y = 0;
@@ -140,15 +137,6 @@ namespace graphics {
 		s32 getTextureUnpackAlignment() const;
 
 		s32 getMaxTextureSize() const;
-
-		struct BindImageTextureParameters {
-			ImageUnitParam imageUnit;
-			ObjectHandle texture;
-			ImageAccessModeParam accessMode;
-			InternalColorFormatParam textureFormat;
-		};
-
-		void bindImageTexture(const BindImageTextureParameters & _params);
 
 		u32 convertInternalTextureFormat(u32 _format) const;
 
@@ -201,6 +189,8 @@ namespace graphics {
 		};
 
 		bool blitFramebuffers(const BlitFramebuffersParams & _params);
+
+		void setDrawBuffers(u32 _num);
 
 		/*---------------Pixelbuffer-------------*/
 
@@ -278,7 +268,6 @@ namespace graphics {
 		static bool WeakBlitFramebuffer;
 		static bool DepthFramebufferTextures;
 		static bool ShaderProgramBinary;
-		static bool ImageTextures;
 		static bool IntegerTextures;
 		static bool ClipControl;
 

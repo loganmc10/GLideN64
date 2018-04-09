@@ -455,6 +455,8 @@ public:
 		} else if (_glinfo.isGLESX) {
 			std::stringstream ss;
 			ss << "#version " << Utils::to_string(_glinfo.majorVersion) << Utils::to_string(_glinfo.minorVersion) << "0 es " << std::endl;
+			if (_glinfo.ext_fetch && config.frameBufferEmulation.N64DepthCompare != 0)
+				ss << "#extension GL_EXT_shader_framebuffer_fetch : enable" << std::endl;
 			ss << "# define IN in" << std::endl
 				<< "# define OUT out" << std::endl
 				<< "# define texture2D texture" << std::endl;
@@ -462,10 +464,8 @@ public:
 		} else {
 			std::stringstream ss;
 			ss << "#version " << Utils::to_string(_glinfo.majorVersion) << Utils::to_string(_glinfo.minorVersion) << "0 core " << std::endl;
-			if (_glinfo.imageTextures && _glinfo.majorVersion * 10 + _glinfo.minorVersion < 42) {
-				ss << "#extension GL_ARB_shader_image_load_store : enable" << std::endl
-					<< "#extension GL_ARB_shading_language_420pack : enable" << std::endl;
-			}
+			if (_glinfo.ext_fetch && config.frameBufferEmulation.N64DepthCompare != 0)
+				ss << "#extension GL_EXT_shader_framebuffer_fetch : enable" << std::endl;
 			ss << "# define IN in" << std::endl
 				<< "# define OUT out" << std::endl
 				<< "# define texture2D texture" << std::endl;
@@ -772,7 +772,9 @@ public:
 			"IN mediump vec2 vLodTexCoord;\n"
 			"IN lowp float vNumLights;	\n"
 			"OUT lowp vec4 fragColor;	\n"
-		;
+			;
+			if (config.frameBufferEmulation.N64DepthCompare != 0)
+				m_part += "layout(location = 1) inout highp vec4 depthImage;	\n";
 	}
 };
 
@@ -836,7 +838,10 @@ public:
 		m_part +=
 			"IN lowp vec4 vShadeColor;	\n"
 			"IN lowp float vNumLights;	\n"
-			"OUT lowp vec4 fragColor;	\n";
+			"OUT lowp vec4 fragColor;	\n"
+			;
+			if (config.frameBufferEmulation.N64DepthCompare != 0)
+				m_part += "layout(location = 1) inout highp vec4 depthImage;	\n";
 	}
 };
 
@@ -938,8 +943,6 @@ public:
 		if (config.frameBufferEmulation.N64DepthCompare != 0) {
 
 			m_part +=
-				"layout(binding = 2, r32f) highp uniform coherent image2D uDepthImageZ;		\n"
-				"layout(binding = 3, r32f) highp uniform coherent image2D uDepthImageDeltaZ;\n"
 				"bool depth_compare(highp float curZ);\n"
 				"bool depth_render(highp float Z, highp float curZ);\n";
 			;
@@ -1315,7 +1318,7 @@ public:
 			m_part =
 				"  if (uRenderTarget != 0) { if (!depth_render(fragColor.r, fragDepth)) discard; } \n"
 				"  else if (!depth_compare(fragDepth)) discard; \n"
-			;
+				;
 		}
 	}
 };
@@ -1882,16 +1885,13 @@ public:
 				"uniform mediump float uDeltaZ;							\n"
 				"bool depth_compare(highp float curZ)									\n"
 				"{														\n"
-				"  ivec2 coord = ivec2(gl_FragCoord.xy);				\n"
-				"  highp vec4 depthZ = imageLoad(uDepthImageZ,coord);	\n"
-				"  highp vec4 depthDeltaZ = imageLoad(uDepthImageDeltaZ,coord);\n"
-				"  highp float bufZ = depthZ.r;							\n"
+				"  highp float bufZ = depthImage.r;							\n"
 				"  highp float dz, dzMin;								\n"
 				"  if (uDepthSource == 1) {								\n"
 				"     dzMin = dz = uDeltaZ;								\n"
 				"  } else {												\n"
 				"    dz = 4.0*fwidth(curZ);						\n"
-				"    dzMin = min(dz, depthDeltaZ.r);					\n"
+				"    dzMin = min(dz, depthImage.g);					\n"
 				"  }													\n"
 				"  bool bInfront = curZ < bufZ;							\n"
 				"  bool bFarther = (curZ + dzMin) >= bufZ;				\n"
@@ -1914,19 +1914,14 @@ public:
 				"       break;											\n"
 				"  }													\n"
 				"  if (uEnableDepthUpdate != 0  && bRes) {				\n"
-				"    highp vec4 depthOutZ = vec4(curZ, 1.0, 1.0, 1.0); \n"
-				"    highp vec4 depthOutDeltaZ = vec4(dz, 1.0, 1.0, 1.0); \n"
-				"    imageStore(uDepthImageZ, coord, depthOutZ);		\n"
-				"    imageStore(uDepthImageDeltaZ, coord, depthOutDeltaZ);\n"
+				"    depthImage.r = curZ;		\n"
+				"    depthImage.g = dz;\n"
 				"  }													\n"
-				"  memoryBarrierImage();								\n"
 				"  if (uEnableDepthCompare != 0)						\n"
 				"    return bRes;										\n"
 				"  return true;											\n"
 				"}														\n"
 			;
-			if (!_glinfo.isGLESX && _glinfo.imageTextures && _glinfo.majorVersion * 10 + _glinfo.minorVersion < 43)
-				m_part = "#extension GL_ARB_compute_shader : enable	\n" + m_part;
 		}
 	}
 };
@@ -1940,22 +1935,15 @@ public:
 			m_part =
 				"bool depth_render(highp float Z, highp float curZ)						\n"
 				"{														\n"
-				"  ivec2 coord = ivec2(gl_FragCoord.xy);				\n"
 				"  if (uEnableDepthCompare != 0) {						\n"
-				"    highp vec4 depthZ = imageLoad(uDepthImageZ,coord);	\n"
-				"    highp float bufZ = depthZ.r;						\n"
+				"    highp float bufZ = depthImage.r;						\n"
 				"    if (curZ >= bufZ) return false;					\n"
 				"  }													\n"
-				"  highp vec4 depthOutZ = vec4(Z, 1.0, 1.0, 1.0);		\n"
-				"  highp vec4 depthOutDeltaZ = vec4(0.0, 1.0, 1.0, 1.0);\n"
-				"  imageStore(uDepthImageZ,coord, depthOutZ);			\n"
-				"  imageStore(uDepthImageDeltaZ,coord, depthOutDeltaZ);	\n"
-				"  memoryBarrierImage();								\n"
+				"  depthImage.r = Z;			\n"
+				"  depthImage.g = 0.0;	\n"
 				"  return true;											\n"
 				"}														\n"
 			;
-			if (!_glinfo.isGLESX && _glinfo.imageTextures && _glinfo.majorVersion * 10 + _glinfo.minorVersion < 43)
-				m_part = "#extension GL_ARB_compute_shader : enable	\n" + m_part;
 		}
 	}
 };

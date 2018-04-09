@@ -50,6 +50,7 @@ namespace graphics {
 
 	namespace bufferAttachment {
 		extern BufferAttachmentParam COLOR_ATTACHMENT0;
+		extern BufferAttachmentParam COLOR_ATTACHMENT1;
 		extern BufferAttachmentParam DEPTH_ATTACHMENT;
 	}
 
@@ -71,19 +72,6 @@ namespace graphics {
 		extern TextureUnitParam ZLUTTex;
 		extern TextureUnitParam PaletteTex;
 		extern TextureUnitParam MSTex[2];
-	}
-
-	namespace textureImageUnits {
-		extern ImageUnitParam Zlut;
-		extern ImageUnitParam Tlut;
-		extern ImageUnitParam DepthZ;
-		extern ImageUnitParam DepthDeltaZ;
-	}
-
-	namespace textureImageAccessMode {
-		extern ImageAccessModeParam READ_ONLY;
-		extern ImageAccessModeParam WRITE_ONLY;
-		extern ImageAccessModeParam READ_WRITE;
 	}
 
 	namespace textureParameters {

@@ -44,19 +44,11 @@ void GLInfo::init() {
 
 	int numericVersion = majorVersion * 10 + minorVersion;
 	if (isGLES2) {
-		imageTextures = false;
 		msaa = false;
 	} else if (isGLESX) {
-		imageTextures = (numericVersion >= 31) && IS_GL_FUNCTION_VALID(glBindImageTexture);
 		msaa = numericVersion >= 31;
 	} else {
-		imageTextures = ((numericVersion >= 43) || (Utils::isExtensionSupported(*this, "GL_ARB_shader_image_load_store") &&
-				Utils::isExtensionSupported(*this, "GL_ARB_compute_shader"))) && IS_GL_FUNCTION_VALID(glBindImageTexture);
 		msaa = true;
-	}
-	if (!imageTextures && config.frameBufferEmulation.N64DepthCompare != 0) {
-		config.frameBufferEmulation.N64DepthCompare = 0;
-		LOG(LOG_WARNING, "N64 depth compare will not work without Image Textures support provided in OpenGL >= 4.3 or GLES >= 3.1\n");
 	}
 	if (isGLES2)
 		config.generalEmulation.enableFragmentDepthWrite = 0;
@@ -102,4 +94,8 @@ void GLInfo::init() {
 
 	depthTexture = !isGLES2 || Utils::isExtensionSupported(*this, "GL_OES_depth_texture");
 	noPerspective = Utils::isExtensionSupported(*this, "GL_NV_shader_noperspective_interpolation");
+
+	ext_fetch = Utils::isExtensionSupported(*this, "GL_EXT_shader_framebuffer_fetch");
+
+	config.frameBufferEmulation.N64DepthCompare = config.frameBufferEmulation.N64DepthCompare && ext_fetch && !isGLES2;
 }

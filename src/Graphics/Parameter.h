@@ -39,7 +39,6 @@ namespace graphics {
 		A(u32 _parameter) : Parameter(_parameter) {}	\
 	}
 
-	SpecialParameterClass(ImageUnitParam);
 	SpecialParameterClass(TextureUnitParam);
 	SpecialParameterClass(ColorFormatParam);
 	SpecialParameterClass(InternalColorFormatParam);
@@ -49,7 +48,6 @@ namespace graphics {
 	SpecialParameterClass(TextureParam);
 	SpecialParameterClass(BufferAttachmentParam);
 	SpecialParameterClass(EnableParam);
-	SpecialParameterClass(ImageAccessModeParam);
 	SpecialParameterClass(CullModeParam);
 	SpecialParameterClass(CompareParam);
 	SpecialParameterClass(BlendParam);

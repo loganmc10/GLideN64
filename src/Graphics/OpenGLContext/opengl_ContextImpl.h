@@ -72,8 +72,6 @@ namespace opengl {
 
 		s32 getMaxTextureSize() const override;
 
-		void bindImageTexture(const graphics::Context::BindImageTextureParameters & _params) override;
-
 		u32 convertInternalTextureFormat(u32 _format) const override;
 
 		/*---------------Framebuffer-------------*/
@@ -93,6 +91,8 @@ namespace opengl {
 		void addFrameBufferRenderTarget(const graphics::Context::FrameBufferRenderTarget & _params) override;
 
 		bool blitFramebuffers(const graphics::Context::BlitFramebuffersParams & _params) override;
+
+		void setDrawBuffers(u32 _num) override;
 
 		/*---------------Pixelbuffer-------------*/
 

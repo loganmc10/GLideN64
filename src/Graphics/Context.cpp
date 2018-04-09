@@ -10,7 +10,6 @@ bool Context::BlitFramebuffer = false;
 bool Context::WeakBlitFramebuffer = false;
 bool Context::DepthFramebufferTextures = false;
 bool Context::ShaderProgramBinary = false;
-bool Context::ImageTextures = false;
 bool Context::IntegerTextures = false;
 bool Context::ClipControl = false;
 
@@ -31,7 +30,6 @@ void Context::init()
 	WeakBlitFramebuffer = m_impl->isSupported(SpecialFeatures::WeakBlitFramebuffer);
 	DepthFramebufferTextures = m_impl->isSupported(SpecialFeatures::DepthFramebufferTextures);
 	ShaderProgramBinary = m_impl->isSupported(SpecialFeatures::ShaderProgramBinary);
-	ImageTextures = m_impl->isSupported(SpecialFeatures::ImageTextures);
 	IntegerTextures = m_impl->isSupported(SpecialFeatures::IntegerTextures);
 	ClipControl = m_impl->isSupported(SpecialFeatures::ClipControl);
 }
@@ -157,11 +155,6 @@ s32 Context::getMaxTextureSize() const
 	return m_impl->getMaxTextureSize();
 }
 
-void Context::bindImageTexture(const BindImageTextureParameters & _params)
-{
-	m_impl->bindImageTexture(_params);
-}
-
 u32 Context::convertInternalTextureFormat(u32 _format) const
 {
 	return m_impl->convertInternalTextureFormat(_format);
@@ -207,6 +200,11 @@ void Context::addFrameBufferRenderTarget(const FrameBufferRenderTarget & _params
 bool Context::blitFramebuffers(const BlitFramebuffersParams & _params)
 {
 	return m_impl->blitFramebuffers(_params);
+}
+
+void Context::setDrawBuffers(u32 _num)
+{
+	m_impl->setDrawBuffers(_num);
 }
 
 PixelReadBuffer * Context::createPixelReadBuffer(size_t _sizeInBytes)

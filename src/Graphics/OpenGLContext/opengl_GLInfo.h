@@ -18,13 +18,13 @@ struct GLInfo {
 	GLint minorVersion = 0;
 	bool isGLES2 = false;
 	bool isGLESX = false;
-	bool imageTextures = false;
 	bool bufferStorage = false;
 	bool texStorage    = false;
 	bool shaderStorage = false;
 	bool msaa = false;
 	bool depthTexture = false;
 	bool noPerspective = false;
+	bool ext_fetch = false;
 	Renderer renderer = Renderer::Other;
 
 	void init();

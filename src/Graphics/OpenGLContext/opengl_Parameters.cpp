@@ -50,6 +50,7 @@ namespace graphics {
 
 	namespace bufferAttachment {
 		BufferAttachmentParam COLOR_ATTACHMENT0(GL_COLOR_ATTACHMENT0);
+		BufferAttachmentParam COLOR_ATTACHMENT1(GL_COLOR_ATTACHMENT1);
 		BufferAttachmentParam DEPTH_ATTACHMENT(GL_DEPTH_ATTACHMENT);
 	}
 
@@ -71,17 +72,6 @@ namespace graphics {
 		TextureUnitParam ZLUTTex(4U);
 		TextureUnitParam PaletteTex(5U);
 		TextureUnitParam MSTex[2] = { 6U, 7U };
-	}
-
-	namespace textureImageUnits {
-		ImageUnitParam DepthZ(2U);
-		ImageUnitParam DepthDeltaZ(3U);
-	}
-
-	namespace textureImageAccessMode {
-		ImageAccessModeParam READ_ONLY(GL_READ_ONLY);
-		ImageAccessModeParam WRITE_ONLY(GL_WRITE_ONLY);
-		ImageAccessModeParam READ_WRITE(GL_READ_WRITE);
 	}
 
 	namespace textureParameters {

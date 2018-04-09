@@ -339,10 +339,10 @@ protected:
 		depthType = GL_UNSIGNED_INT;
 		depthFormatBytes = 4;
 
-		depthImageInternalFormat = GL_R32F;
-		depthImageFormat = GL_RED;
+		depthImageInternalFormat = GL_RGBA32F;
+		depthImageFormat = GL_RGBA;
 		depthImageType = GL_FLOAT;
-		depthImageFormatBytes = 4;
+		depthImageFormatBytes = 16;
 
 		lutInternalFormat = GL_R32UI;
 		lutFormat = GL_RED_INTEGER;
@@ -387,10 +387,10 @@ protected:
 		depthType = GL_FLOAT;
 		depthFormatBytes = 4;
 
-		depthImageInternalFormat = GL_R32F;
-		depthImageFormat = GL_RED;
+		depthImageInternalFormat = GL_RGBA32F;
+		depthImageFormat = GL_RGBA;
 		depthImageType = GL_FLOAT;
-		depthImageFormatBytes = 4;
+		depthImageFormatBytes = 16;
 
 		lutInternalFormat = GL_R32UI;
 		lutFormat = GL_RED_INTEGER;

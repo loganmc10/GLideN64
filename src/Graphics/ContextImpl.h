@@ -35,7 +35,6 @@ namespace graphics {
 		virtual void setTextureUnpackAlignment(s32 _param) = 0;
 		virtual s32 getTextureUnpackAlignment() const = 0;
 		virtual s32 getMaxTextureSize() const = 0;
-		virtual void bindImageTexture(const Context::BindImageTextureParameters & _params) = 0;
 		virtual u32 convertInternalTextureFormat(u32 _format) const = 0;
 		virtual FramebufferTextureFormats * getFramebufferTextureFormats() = 0;
 		virtual ObjectHandle createFramebuffer() = 0;
@@ -45,6 +44,7 @@ namespace graphics {
 		virtual ObjectHandle createRenderbuffer() = 0;
 		virtual void initRenderbuffer(const Context::InitRenderbufferParams & _params) = 0;
 		virtual bool blitFramebuffers(const Context::BlitFramebuffersParams & _params) = 0;
+		virtual void setDrawBuffers(u32 _num) = 0;
 		virtual PixelReadBuffer * createPixelReadBuffer(size_t _sizeInBytes) = 0;
 		virtual ColorBufferReader * createColorBufferReader(CachedTexture * _pTexture) = 0;
 		virtual bool isCombinerProgramBuilderObsolete() = 0;
