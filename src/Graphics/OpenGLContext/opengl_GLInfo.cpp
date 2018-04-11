@@ -71,9 +71,14 @@ void GLInfo::init() {
 		}
 	}
 
+	bool ext_draw_buffers_indexed = Utils::isExtensionSupported(*this, "GL_EXT_draw_buffers_indexed");
 #ifdef EGL
 	if (isGLESX && bufferStorage)
 		g_glBufferStorage = (PFNGLBUFFERSTORAGEPROC) eglGetProcAddress("glBufferStorageEXT");
+	if (isGLESX && ext_draw_buffers_indexed) {
+		g_glEnablei = (PFNGLENABLEIPROC) eglGetProcAddress("glEnableiEXT");
+		g_glDisablei = (PFNGLDISABLEIPROC) eglGetProcAddress("glDisableiEXT");
+	}
 	if (isGLES2 && shaderStorage) {
 		g_glProgramBinary = (PFNGLPROGRAMBINARYPROC) eglGetProcAddress("glProgramBinaryOES");
 		g_glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC) eglGetProcAddress("glGetProgramBinaryOES");
@@ -97,5 +102,5 @@ void GLInfo::init() {
 
 	ext_fetch = Utils::isExtensionSupported(*this, "GL_EXT_shader_framebuffer_fetch");
 
-	config.frameBufferEmulation.N64DepthCompare = config.frameBufferEmulation.N64DepthCompare && ext_fetch && !isGLES2;
+	config.frameBufferEmulation.N64DepthCompare = config.frameBufferEmulation.N64DepthCompare && ext_fetch && !isGLES2 && (!isGLESX || ext_draw_buffers_indexed);
 }

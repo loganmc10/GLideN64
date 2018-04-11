@@ -1,6 +1,7 @@
 #include "GLFunctions.h"
 #include "opengl_GLInfo.h"
 #include "opengl_CachedFunctions.h"
+#include <Graphics/Parameters.h>
 
 using namespace graphics;
 using namespace opengl;
@@ -21,9 +22,15 @@ void CachedEnable::enable(bool _enable)
 		return;
 
 	if (_enable) {
-		glEnable(GLenum(m_parameter));
+		if (m_parameter == enable::BLEND && IS_GL_FUNCTION_VALID(glEnablei))
+			glEnablei(GLenum(m_parameter), 0);
+		else
+			glEnable(GLenum(m_parameter));
 	} else {
-		glDisable(GLenum(m_parameter));
+		if (m_parameter == enable::BLEND && IS_GL_FUNCTION_VALID(glDisablei))
+			glDisablei(GLenum(m_parameter), 0);
+		else
+			glDisable(GLenum(m_parameter));
 	}
 }
 

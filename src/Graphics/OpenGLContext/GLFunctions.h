@@ -215,6 +215,8 @@ extern PFNGLBLENDCOLORPROC g_glBlendColor;
 #define glDrawRangeElementsBaseVertex(...) CHECKED_GL_FUNCTION(g_glDrawRangeElementsBaseVertex, __VA_ARGS__)
 #define glFlushMappedBufferRange(...) CHECKED_GL_FUNCTION(g_glFlushMappedBufferRange, __VA_ARGS__)
 #define glClearBufferfv(...) CHECKED_GL_FUNCTION(g_glClearBufferfv, __VA_ARGS__)
+#define glEnablei(...) CHECKED_GL_FUNCTION(g_glEnablei, __VA_ARGS__)
+#define glDisablei(...) CHECKED_GL_FUNCTION(g_glDisablei, __VA_ARGS__)
 
 extern PFNGLCREATESHADERPROC g_glCreateShader;
 extern PFNGLCOMPILESHADERPROC g_glCompileShader;
@@ -310,6 +312,8 @@ extern PFNGLNAMEDFRAMEBUFFERTEXTUREPROC g_glNamedFramebufferTexture;
 extern PFNGLDRAWRANGEELEMENTSBASEVERTEXPROC g_glDrawRangeElementsBaseVertex;
 extern PFNGLFLUSHMAPPEDBUFFERRANGEPROC g_glFlushMappedBufferRange;
 extern PFNGLCLEARBUFFERFVPROC g_glClearBufferfv;
+extern PFNGLENABLEIPROC g_glEnablei;
+extern PFNGLDISABLEIPROC g_glDisablei;
 
 void initGLFunctions();
 
