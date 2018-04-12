@@ -313,6 +313,14 @@ CachedTexture * DepthBuffer::copyDepthBufferTexture(FrameBuffer * _pBuffer)
 
 void DepthBuffer::activateDepthBufferTexture(FrameBuffer * _pBuffer)
 {
+	Context::FrameBufferRenderTarget params;
+	params.bufferHandle = _pBuffer->m_FBO;
+	params.bufferTarget = bufferTarget::DRAW_FRAMEBUFFER;
+	params.attachment = bufferAttachment::DEPTH_ATTACHMENT;
+	params.textureTarget = textureTarget::TEXTURE_2D;
+	params.textureHandle = ObjectHandle::null;
+	gfxContext.addFrameBufferRenderTarget(params);
+
 	textureCache().activateTexture(0, resolveDepthBufferTexture(_pBuffer));
 }
 
