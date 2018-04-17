@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <Log.h>
 #include <Config.h>
+#include <Graphics/Context.h>
 #include "glsl_Utils.h"
 #include "glsl_ShaderPart.h"
 #include "glsl_CombinerInputs.h"
@@ -799,7 +800,7 @@ public:
 
 		if (config.frameBufferEmulation.N64DepthCompare != 0 && _glinfo.ext_fetch) {
 			m_part +=
-				"layout(location = 0) OUT lowp vec4 fragColor;	\n"
+				"layout(location = 0) inout lowp vec4 fragColor;	\n"
 				"layout(location = 1) inout highp vec4 depthZ;	\n"
 				"layout(location = 2) inout highp vec4 depthDeltaZ;	\n"
 				;
@@ -875,7 +876,7 @@ public:
 
 		if (config.frameBufferEmulation.N64DepthCompare != 0 && _glinfo.ext_fetch) {
 			m_part +=
-				"layout(location = 0) OUT lowp vec4 fragColor;	\n"
+				"layout(location = 0) inout lowp vec4 fragColor;	\n"
 				"layout(location = 1) inout highp vec4 depthZ;	\n"
 				"layout(location = 2) inout highp vec4 depthDeltaZ;	\n"
 				;
@@ -1383,10 +1384,9 @@ public:
 					m_part += "  endInvocationInterlockARB();	\n";
 				else if (_glinfo.fragment_interlockNV)
 					m_part += "  endInvocationInterlockNV();	\n";
-			}
-
-			m_part += "  if (should_discard) discard;	\n";
-
+				m_part += "  if (should_discard) discard;	\n";
+			} else
+				m_part += "  if (should_discard) fragColor = origColor;	\n";
 		}
 	}
 };
@@ -2251,6 +2251,9 @@ graphics::CombinerProgram * CombinerProgramBuilder::buildCombinerProgram(Combine
 		m_fragmentMain2Cycle->write(ssShader);
 	else
 		m_fragmentMain->write(ssShader);
+
+	if (config.frameBufferEmulation.N64DepthCompare != 0 && graphics::Context::FramebufferFetch)
+		ssShader << "  lowp vec4 origColor = fragColor;" << std::endl;
 
 	if (g_cycleType <= G_CYC_2CYCLE)
 		m_fragmentBlendMux->write(ssShader);
