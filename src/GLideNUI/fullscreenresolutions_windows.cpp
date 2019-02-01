@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <math.h>
 #include <QObject>
 #include <stdio.h>
 #include "FullscreenResolutions.h"
