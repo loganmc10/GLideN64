@@ -119,6 +119,7 @@ void GLInfo::init() {
 			Utils::isExtensionSupported(*this, "GL_ARB_texture_storage");
 
 	shaderStorage = false;
+#if 0
 	if (config.generalEmulation.enableShadersStorage != 0) {
 		const char * strGetProgramBinary = isGLESX
 			? "GL_OES_get_program_binary"
@@ -129,6 +130,7 @@ void GLInfo::init() {
 			shaderStorage = numBinaryFormats > 0;
 		}
 	}
+#endif
 
 	bool ext_draw_buffers_indexed = isGLESX && (Utils::isExtensionSupported(*this, "GL_EXT_draw_buffers_indexed") || numericVersion >= 32);
 #ifdef EGL

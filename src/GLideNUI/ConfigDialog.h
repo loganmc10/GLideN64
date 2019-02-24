@@ -31,8 +31,6 @@ private slots:
 
 	void on_buttonBox_clicked(QAbstractButton *button);
 
-	void on_fullScreenResolutionComboBox_currentIndexChanged(int index);
-
 	void on_windowedResolutionComboBox_currentIndexChanged(int index);
 
 	void on_windowedResolutionComboBox_currentTextChanged(QString text);
@@ -62,12 +60,6 @@ private slots:
 	void on_fontSizeSpinBox_valueChanged(int value);
 
 	void on_tabWidget_currentChanged(int tab);
-
-	void on_texPackPathButton_clicked();
-
-	void on_texCachePathButton_clicked();
-
-	void on_texDumpPathButton_clicked();
 
 	void on_profilesComboBox_currentIndexChanged(const QString &arg1);
 

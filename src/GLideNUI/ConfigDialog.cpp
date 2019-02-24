@@ -11,12 +11,12 @@
 #include <QInputDialog>
 #include <QDirIterator>
 
+#include "../PluginAPI.h"
 #include "../Config.h"
 #include "../DebugDump.h"
 #include "ui_configDialog.h"
 #include "Settings.h"
 #include "ConfigDialog.h"
-#include "FullscreenResolutions.h"
 #include "qevent.h"
 #include "osal_keys.h"
 #include "QtKeyToHID.h"
@@ -124,7 +124,9 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	m_blockReInit = true;
 
 	if (reInit && m_romName != nullptr && ui->customSettingsCheckBox->isChecked() && ui->settingsDestGameRadioButton->isChecked()) {
-		loadCustomRomSettings(m_strIniPath, m_romName);
+		wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
+		api().FindPluginPath(strCustomFolderPath);
+		loadCustomRomSettings(QString::fromWCharArray(strCustomFolderPath), m_romName);
 	} else if (reInit) {
 		loadSettings(m_strIniPath);
 	}
@@ -164,13 +166,7 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	ui->overscanPalTopSpinBox->setValue(config.frameBufferEmulation.overscanPAL.top);
 	ui->overscanPalBottomSpinBox->setValue(config.frameBufferEmulation.overscanPAL.bottom);
 
-	QStringList fullscreenModesList, fullscreenRatesList;
-	int fullscreenMode, fullscreenRate;
-	fillFullscreenResolutionsList(fullscreenModesList, fullscreenMode, fullscreenRatesList, fullscreenRate);
-	ui->fullScreenResolutionComboBox->clear();
-	ui->fullScreenResolutionComboBox->insertItems(0, fullscreenModesList);
-	ui->fullScreenResolutionComboBox->setCurrentIndex(fullscreenMode);
-	ui->fullScreenRefreshRateComboBox->setCurrentIndex(fullscreenRate);
+	ui->fullScreenCheckBox->setChecked(config.video.fullscreen != 0);
 
 	if (m_maxMSAA == 0 && config.video.maxMultiSampling == 0) {
 		// default value
@@ -322,6 +318,7 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	ui->readDepthChunkCheckBox->setChecked(config.frameBufferEmulation.fbInfoReadDepthChunk != 0);
 	ui->readDepthChunkCheckBox->setEnabled(fbEmulationEnabled && config.frameBufferEmulation.fbInfoDisabled == 0);
 
+#if 0
 	// Texture filter settings
 	ui->filterComboBox->setCurrentIndex(config.textureFilter.txFilterMode);
 	ui->enhancementComboBox->setCurrentIndex(config.textureFilter.txEnhancementMode);
@@ -343,6 +340,7 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	ui->texCachePathLineEdit->setText(QString::fromWCharArray(config.textureFilter.txCachePath));
 	ui->texDumpPathLineEdit->setText(QString::fromWCharArray(config.textureFilter.txDumpPath));
 
+#endif
 	// OSD settings
 	QString fontName(config.font.name.c_str());
 	ui->fontLineEdit->setText(fontName);
@@ -520,8 +518,7 @@ void ConfigDialog::accept(bool justSave) {
 		config.video.windowedHeight = windowedResolutionDimensions[1].trimmed().toInt();
 	}
 
-	getFullscreenResolutions(ui->fullScreenResolutionComboBox->currentIndex(), config.video.fullscreenWidth, config.video.fullscreenHeight);
-	getFullscreenRefreshRate(ui->fullScreenRefreshRateComboBox->currentIndex(), config.video.fullscreenRefresh);
+	config.video.fullscreen = ui->fullScreenCheckBox->isChecked() ? 1 : 0;
 
 	config.video.fxaa = ui->fxaaRadioButton->isChecked() ? 1 : 0;
 	config.video.multisampling =
@@ -627,6 +624,7 @@ void ConfigDialog::accept(bool justSave) {
 	config.frameBufferEmulation.overscanPAL.top = ui->overscanPalTopSpinBox->value();
 	config.frameBufferEmulation.overscanPAL.bottom = ui->overscanPalBottomSpinBox->value();
 
+#if 0
 	// Texture filter settings
 	config.textureFilter.txFilterMode = ui->filterComboBox->currentIndex();
 	config.textureFilter.txEnhancementMode = ui->enhancementComboBox->currentIndex();
@@ -694,6 +692,7 @@ void ConfigDialog::accept(bool justSave) {
 	}
 	config.textureFilter.txDumpPath[txDumpPath.path().toWCharArray(config.textureFilter.txDumpPath)] = L'\0';
 
+#endif
 	// OSD settings
 	config.font.size = ui->fontSizeSpinBox->value();
 #ifdef OS_WINDOWS
@@ -749,7 +748,11 @@ void ConfigDialog::accept(bool justSave) {
 		config.debug.dumpMode |= DEBUG_DETAIL;
 
 	if (config.generalEmulation.enableCustomSettings && ui->settingsDestGameRadioButton->isChecked() && m_romName != nullptr)
-		saveCustomRomSettings(m_strIniPath, m_romName);
+	{
+		wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
+		api().FindPluginPath(strCustomFolderPath);
+		saveCustomRomSettings(QString::fromWCharArray(strCustomFolderPath), m_romName);
+	}
 	else
 		writeSettings(m_strIniPath);
 
@@ -807,49 +810,6 @@ void ConfigDialog::on_buttonBox_clicked(QAbstractButton *button)
 	} else if ((QPushButton *)button == ui->buttonBox->button(QDialogButtonBox::Ok)) {
 		this->accept(false);
 	}
-}
-
-void ConfigDialog::on_fullScreenResolutionComboBox_currentIndexChanged(int index)
-{
-	QStringList fullscreenRatesList;
-	int fullscreenRate;
-	fillFullscreenRefreshRateList(index, fullscreenRatesList, fullscreenRate);
-	ui->fullScreenRefreshRateComboBox->clear();
-	ui->fullScreenRefreshRateComboBox->insertItems(0, fullscreenRatesList);
-	ui->fullScreenRefreshRateComboBox->setCurrentIndex(fullscreenRate);
-}
-
-void ConfigDialog::on_texPackPathButton_clicked()
-{
-	QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly | QFileDialog::ReadOnly | QFileDialog::DontUseSheet | QFileDialog::ReadOnly | QFileDialog::HideNameFilterDetails;
-	QString directory = QFileDialog::getExistingDirectory(this,
-		"",
-		ui->texPackPathLineEdit->text(),
-		options);
-	if (!directory.isEmpty())
-		ui->texPackPathLineEdit->setText(directory);
-}
-
-void ConfigDialog::on_texCachePathButton_clicked()
-{
-	QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly | QFileDialog::ReadOnly | QFileDialog::DontUseSheet | QFileDialog::ReadOnly | QFileDialog::HideNameFilterDetails;
-	QString directory = QFileDialog::getExistingDirectory(this,
-		"",
-		ui->texCachePathLineEdit->text(),
-		options);
-	if (!directory.isEmpty())
-		ui->texCachePathLineEdit->setText(directory);
-}
-
-void ConfigDialog::on_texDumpPathButton_clicked()
-{
-	QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly | QFileDialog::ReadOnly | QFileDialog::DontUseSheet | QFileDialog::ReadOnly | QFileDialog::HideNameFilterDetails;
-	QString directory = QFileDialog::getExistingDirectory(this,
-		"",
-		ui->texDumpPathLineEdit->text(),
-		options);
-	if (!directory.isEmpty())
-		ui->texDumpPathLineEdit->setText(directory);
 }
 
 void ConfigDialog::on_windowedResolutionComboBox_currentIndexChanged(int index)
