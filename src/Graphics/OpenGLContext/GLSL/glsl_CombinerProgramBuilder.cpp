@@ -780,7 +780,7 @@ public:
 		}
 
 		m_part +=
-			"IN lowp vec4 vShadeColor;	\n"
+			"noperspective IN lowp vec4 vShadeColor;	\n"
 			"IN highp vec2 vTexCoord0;\n"
 			"IN highp vec2 vTexCoord1;\n"
 			"IN mediump vec2 vLodTexCoord;\n"
@@ -859,7 +859,7 @@ public:
 		}
 
 		m_part +=
-			"IN lowp vec4 vShadeColor;	\n"
+			"noperspective IN lowp vec4 vShadeColor;	\n"
 			"IN lowp float vNumLights;	\n"
 			;
 
