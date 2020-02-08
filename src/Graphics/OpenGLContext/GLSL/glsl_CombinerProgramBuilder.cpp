@@ -779,8 +779,12 @@ public:
 			;
 		}
 
+		if (!_glinfo.isGLESX || _glinfo.noPerspective)
+			m_part += "noperspective IN lowp vec4 vShadeColor;	\n";
+		else
+			m_part += "IN lowp vec4 vShadeColor;	\n";
+
 		m_part +=
-			"noperspective IN lowp vec4 vShadeColor;	\n"
 			"IN highp vec2 vTexCoord0;\n"
 			"IN highp vec2 vTexCoord1;\n"
 			"IN mediump vec2 vLodTexCoord;\n"
@@ -858,10 +862,12 @@ public:
 				;
 		}
 
-		m_part +=
-			"noperspective IN lowp vec4 vShadeColor;	\n"
-			"IN lowp float vNumLights;	\n"
-			;
+		if (!_glinfo.isGLESX || _glinfo.noPerspective)
+			m_part += "noperspective IN lowp vec4 vShadeColor;	\n";
+		else
+			m_part += "IN lowp vec4 vShadeColor;	\n";
+
+		m_part += "IN lowp float vNumLights;	\n";
 
 		if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast && _glinfo.ext_fetch) {
 			m_part +=
