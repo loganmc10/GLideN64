@@ -1252,6 +1252,11 @@ void gDPLLETriangle(u32 _w1, u32 _w2, int _shade, int _texture, int _zbuffer, u3
 
 #endif // OLD_LLE
 
+LLETriangle::LLETriangle()
+{
+	m_textureTileOrg[0] = m_textureTileOrg[1] = nullptr;
+	m_textureScaleOrg[0] = m_textureScaleOrg[1] = 1.0f;
+}
 
 LLETriangle& LLETriangle::get()
 {

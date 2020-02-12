@@ -270,12 +270,12 @@ public:
 	static LLETriangle& get();
 
 private:
-	LLETriangle() = default;
+	LLETriangle();
 	LLETriangle(LLETriangle&) = delete;
 	void start(u32 _tile);
 
-	gDPTile *m_textureTileOrg[2]{ nullptr, nullptr };
-	f32 m_textureScaleOrg[2]{ 1.0f, 1.0f };
+	gDPTile *m_textureTileOrg[2];
+	f32 m_textureScaleOrg[2];
 	bool m_flushed{ true };
 };
 
